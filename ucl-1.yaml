@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cluster-ucl-1
+---
+apiVersion: baremetal.cluster.gke.io/v1
+kind: Cluster
+metadata:
+  name: ucl-1
+  namespace: cluster-ucl-1
+spec:
+  type: user
+  anthosBareMetalVersion: 0.7.0
+  gkeConnect:
+    projectID: eddiejv-ce-anthos-tst
+  controlPlane:
+    nodePoolSpec:
+      clusterName: ucl-1
+      nodes:
+      - address: 10.200.0.42
+      - address: 10.200.0.43
+      - address: 10.200.0.44
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+      - 192.168.0.0/16
+    services:
+      cidrBlocks:
+      - 172.26.232.0/24
+  loadBalancer:
+    mode: bundled
+    ports:
+      controlPlaneLBPort: 443
+    vips:
+      controlPlaneVIP: 10.200.0.148
+      ingressVIP: 10.200.0.150
+    addressPools:
+    - name: pool1
+      addresses:
+      - 10.200.0.150-10.200.0.170
+  clusterOperations:
+    location: us-central1
+    projectID: eddiejv-ce-anthos-tst
+  storage:
+    lvpNodeMounts:
+      path: /mnt/localpv-disk
+      storageClassName: node-disk
+    lvpShare:
+      numPVUnderSharedPath: 5
+      path: /mnt/localpv-share
+      storageClassName: standard
+---
+apiVersion: baremetal.cluster.gke.io/v1
+kind: NodePool
+metadata:
+  name: u-np-1
+  namespace: cluster-ucl-1
+spec:
+  clusterName: ucl-1
+  nodes:
+  - address: 10.200.0.45
+  - address: 10.200.0.46
